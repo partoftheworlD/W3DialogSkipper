@@ -15,21 +15,16 @@ fn send(inputs: &[INPUT], vkey: VIRTUAL_KEY, dur: Duration) {
     }
 }
 
-fn clicker(act_key: VIRTUAL_KEY, dur: Duration) {
-    let mut inputs: [INPUT; 2] = { Default::default() };
-
+fn clicker(inputs: &mut [INPUT]) {
     inputs[0].r#type = INPUT_MOUSE;
     inputs[0].Anonymous.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
 
     inputs[1].r#type = INPUT_MOUSE;
     inputs[1].Anonymous.mi.dwFlags = MOUSEEVENTF_LEFTUP;
-
-    send(&inputs, act_key, dur);
 }
 
-fn spam_key(act_key: VIRTUAL_KEY, dur: Duration, button: VIRTUAL_KEY) {
+fn spam_key(button: VIRTUAL_KEY, inputs: &mut [INPUT]) {
     const KEYEVENTF_KEYDOWN: KEYBD_EVENT_FLAGS = KEYBD_EVENT_FLAGS(0);
-    let mut inputs: [INPUT; 2] = { Default::default() };
 
     inputs[0].r#type = INPUT_KEYBOARD;
 
@@ -39,14 +34,16 @@ fn spam_key(act_key: VIRTUAL_KEY, dur: Duration, button: VIRTUAL_KEY) {
 
     inputs[1] = inputs[0];
     inputs[1].Anonymous.ki.dwFlags = KEYEVENTF_KEYUP;
-
-    send(&inputs, act_key, dur);
 }
 
 fn main() {
     const TIMEOUT: Duration = Duration::from_millis(5);
+    let mut inputs: [INPUT; 2] = { Default::default() };
+
+    clicker(&mut inputs);
+
     loop {
-        clicker(VK_LCONTROL, TIMEOUT);
+        send(&inputs, VK_LCONTROL, TIMEOUT);
         thread::sleep(TIMEOUT);
     }
 }
