@@ -1,9 +1,9 @@
 use std::{mem::zeroed, thread, time::Duration};
 
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    keybd_event, mouse_event, GetAsyncKeyState, SendInput, INPUT, INPUT_0, INPUT_KEYBOARD,
-    INPUT_MOUSE, INPUT_TYPE, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP, MOUSEEVENTF_LEFTDOWN,
-    MOUSEEVENTF_LEFTUP, MOUSEINPUT, VIRTUAL_KEY, VK_CAPITAL, VK_LCONTROL, VK_SPACE,
+    GetAsyncKeyState, SendInput, INPUT, INPUT_KEYBOARD,
+    INPUT_MOUSE, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP, MOUSEEVENTF_LEFTDOWN,
+    MOUSEEVENTF_LEFTUP, VIRTUAL_KEY, VK_LCONTROL, VK_SPACE,
 };
 
 fn safe_click(vkey: VIRTUAL_KEY, dur: Duration) {
