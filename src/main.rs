@@ -1,54 +1,52 @@
-use std::{mem::zeroed, thread, time::Duration};
+use std::{thread, time::Duration};
 
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    GetAsyncKeyState, SendInput, INPUT, INPUT_KEYBOARD,
-    INPUT_MOUSE, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP, MOUSEEVENTF_LEFTDOWN,
-    MOUSEEVENTF_LEFTUP, VIRTUAL_KEY, VK_LCONTROL, VK_SPACE,
+    GetAsyncKeyState, SendInput, INPUT, INPUT_KEYBOARD, INPUT_MOUSE, KEYBD_EVENT_FLAGS,
+    KEYEVENTF_KEYUP, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP, VIRTUAL_KEY, VK_LCONTROL, VK_SPACE,
 };
 
-fn safe_click(vkey: VIRTUAL_KEY, dur: Duration) {
+fn send(inputs: &[INPUT], vkey: VIRTUAL_KEY, dur: Duration) {
+    const SIZE: i32 = size_of::<INPUT>() as i32;
     unsafe {
-        let mut inputs: [INPUT; 2] = zeroed();
-
-        inputs[0].r#type = INPUT_MOUSE;
-        inputs[0].Anonymous.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-
-        inputs[1].r#type = INPUT_MOUSE;
-        inputs[1].Anonymous.mi.dwFlags = MOUSEEVENTF_LEFTUP;
-
         if (GetAsyncKeyState(vkey.0.into())) != 0 {
-            SendInput(&inputs, size_of::<INPUT>() as i32);
+            SendInput(inputs, SIZE);
             thread::sleep(dur);
         }
     }
 }
 
-fn safe_spam(vkey: VIRTUAL_KEY, dur: Duration, button: VIRTUAL_KEY) {
+fn clicker(act_key: VIRTUAL_KEY, dur: Duration) {
+    let mut inputs: [INPUT; 2] = { Default::default() };
+
+    inputs[0].r#type = INPUT_MOUSE;
+    inputs[0].Anonymous.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+
+    inputs[1].r#type = INPUT_MOUSE;
+    inputs[1].Anonymous.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+
+    send(&inputs, act_key, dur);
+}
+
+fn spam_key(act_key: VIRTUAL_KEY, dur: Duration, button: VIRTUAL_KEY) {
     const KEYEVENTF_KEYDOWN: KEYBD_EVENT_FLAGS = KEYBD_EVENT_FLAGS(0);
-    unsafe {
-        let mut inputs: [INPUT; 2] = zeroed();
+    let mut inputs: [INPUT; 2] = { Default::default() };
 
-        inputs[0].r#type = INPUT_KEYBOARD;
-        inputs[0].Anonymous.ki.dwFlags = KEYEVENTF_KEYDOWN;
-        inputs[0].Anonymous.ki.wVk = button;
-        inputs[0].Anonymous.ki.wScan = button.0;
+    inputs[0].r#type = INPUT_KEYBOARD;
 
-        inputs[1].r#type = INPUT_KEYBOARD;
-        inputs[1].Anonymous.ki.dwFlags = KEYEVENTF_KEYUP;
-        inputs[1].Anonymous.ki.wVk = button;
-        inputs[1].Anonymous.ki.wScan = button.0;
+    inputs[0].Anonymous.ki.dwFlags = KEYEVENTF_KEYDOWN;
+    inputs[0].Anonymous.ki.wVk = button;
+    inputs[0].Anonymous.ki.wScan = button.0;
 
-        if (GetAsyncKeyState(vkey.0.into())) != 0 {
-            SendInput(&inputs, size_of::<INPUT>() as i32);
-            thread::sleep(dur);
-        }
-    }
+    inputs[1] = inputs[0];
+    inputs[1].Anonymous.ki.dwFlags = KEYEVENTF_KEYUP;
+
+    send(&inputs, act_key, dur);
 }
 
 fn main() {
     const TIMEOUT: Duration = Duration::from_millis(5);
     loop {
-        safe_spam(VK_LCONTROL, TIMEOUT, VK_SPACE);
+        clicker(VK_LCONTROL, TIMEOUT);
         thread::sleep(TIMEOUT);
     }
 }
