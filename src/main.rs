@@ -8,7 +8,7 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
 fn send(inputs: &[INPUT], vkey: VIRTUAL_KEY, dur: Duration) {
     const SIZE: i32 = size_of::<INPUT>() as i32;
     unsafe {
-        if (GetAsyncKeyState(vkey.0.into())) != 0 {
+        if (GetAsyncKeyState(vkey.0.into())).ne(&0) {
             SendInput(inputs, SIZE);
             thread::sleep(dur);
         }
